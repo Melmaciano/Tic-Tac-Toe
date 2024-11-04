@@ -1,0 +1,21 @@
+.container {
+    background-color: black;
+    width: max-content;
+}
+
+.table {
+    display: grid;
+    grid-template: repeat(3, 50px) / repeat(3, 50px);
+    grid-template-areas: 
+        "a0 a1 a2"
+        "b3 b4 b5"
+        "c6 c7 c8";
+    gap: 5px;
+}
+
+.table > div {
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

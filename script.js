@@ -9,7 +9,7 @@ const gameBoardGame = (function() {
         gameBoard = ["", "", "", "", "", "", "", "", ""];
     }
 
-    const placeNewSymbol = (coord, symbol) => {
+    const processNewMove = (coord, symbol) => {
         gameBoard[coord] = symbol;
     }
 
@@ -25,14 +25,12 @@ const gameBoardGame = (function() {
     return {
         getGameBoard,
         cleanGameBoard,
-        placeNewSymbol,
+        processNewMove,
         logGameBoard,
     }
 })();
 
 const game = (function() {
-    let playerTurn = true;
-
     const checkEquality = (a, b, c) => {
         return a === b && b === c && a !== "";
     }
@@ -49,49 +47,82 @@ const game = (function() {
                 checkEquality(a3, b2, c1));
     }
 
-    const turn = () => {
-        if (playerTurn) player1.nextMove()
-        else player2.nextMove();
-
-        gameBoardGame.logGameBoard();
+    let playerTurn = true;
+    const newTurn = (event) => {
+        const numCell = event.currentTarget.id.slice(1);
+        if (playerTurn) player1.playTurn(numCell);
+        else player2.playTurn(numCell);
 
         if (gameOver()) {
             gameBoardGame.cleanGameBoard();
-            alert(`${playerTurn ? "player1 won" : "player2 won"}`);
-            return false;
+            domManipulator.removeGameBoard();
+            alert(`${playerTurn ? "player1" : "player2"} won`);
         }
 
         playerTurn = !playerTurn;
-        return true;
     }
 
     return {
-        turn,
+        newTurn,
     }
 })();
 
 function createPlayer() {
     const name = prompt("select name")
     const playerSymbol = prompt("select one character")[0];
-    let newCoord;
 
-    const nextMove = () => {
-        do {
-            newCoord = prompt("choice where put the mark (a number between 0 and 8)")
-        } while (gameBoardGame.getGameBoard()[newCoord]);
-        
-        gameBoardGame.placeNewSymbol(newCoord, playerSymbol);
+    const playTurn = (numCell) => {
+        gameBoardGame.processNewMove(numCell, playerSymbol);
+        domManipulator.drawSymbol(numCell, playerSymbol);
     }
 
     return {
         name,
-        nextMove,
+        playTurn,
     }
 }
 
+const domManipulator = (function() {
+    const createGameBoard = () => {
+        const container = document.querySelector(".container");
+        const table = document.createElement("div");
+        table.classList.add("table");
+        let index = 0;
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const coord = String.fromCharCode(i + 97) + index;
+                const cell = document.createElement("div");
+                cell.id = coord;
+                cell.style.gridArea = coord;
+                cell.addEventListener("click", game.newTurn);
+                table.appendChild(cell);
+                index++;
+            }
+        }
+
+        container.appendChild(table);
+    }
+
+    const drawSymbol = (cellNum, symbol) => {
+        const coord = ((cellNum < 3 ? "a" :
+                      cellNum < 6 ? "b" :
+                      "c")
+                      + cellNum);
+        document.querySelector(`#${coord}`).textContent = symbol;
+    }
+
+    const removeGameBoard = () => {
+        document.querySelector(".table").remove();
+    }
+
+    return {
+        createGameBoard,
+        drawSymbol,
+        removeGameBoard,
+    }
+})()
+
 const player1 = createPlayer();
 const player2 = createPlayer();
-let result;
-do {
-    result = game.turn();
-} while (result);
+domManipulator.createGameBoard();
