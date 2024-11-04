@@ -78,8 +78,8 @@ const game = (function() {
     const startGame = () => {
         // Set up players
         do {
-            player1 = createPlayer("player1", "x");
-            player2 = createPlayer("player2", "o");
+            player1 = createPlayer();
+            player2 = createPlayer();
         } while (player1.playerSymbol === player2.playerSymbol);
         playerTurn = true;
 
