@@ -1,3 +1,9 @@
+const startGameBtn = document.querySelector(".start-btn");
+const winnerOutput = document.querySelector(".winner");
+const resultContainer = document.querySelector(".result");
+
+// Data 
+
 const gameBoardGame = (function() {
     let gameBoard = ["", "", "", "", "", "", "", "", ""];
 
@@ -13,24 +19,20 @@ const gameBoardGame = (function() {
         gameBoard[coord] = symbol;
     }
 
-    const logGameBoard = () => {
-        let log = "";
-        gameBoard.forEach((box, i) => {
-            log += box ? box : "#";
-            if (((i + 1) % 3) === 0) log +="\n";
-        })
-        console.log(log);
-    }
-
     return {
         getGameBoard,
         cleanGameBoard,
         processNewMove,
-        logGameBoard,
     }
 })();
 
+// Game function
+
 const game = (function() {
+    let player1;
+    let player2;
+    let playerTurn = true;
+
     const checkEquality = (a, b, c) => {
         return a === b && b === c && a !== "";
     }
@@ -47,42 +49,54 @@ const game = (function() {
                 checkEquality(a3, b2, c1));
     }
 
-    let playerTurn = true;
     const newTurn = (event) => {
         const numCell = event.currentTarget.id.slice(1);
         if (playerTurn) player1.playTurn(numCell);
         else player2.playTurn(numCell);
 
         if (gameOver()) {
-            gameBoardGame.cleanGameBoard();
-            domManipulator.removeGameBoard();
-            alert(`${playerTurn ? "player1" : "player2"} won`);
+            winnerOutput.textContent = `${playerTurn ? player1.name : player2.name} won`;
+            startGameBtn.textContent = "New Game";
+            resultContainer.style.display = "flex";
+            setTimeout(() => {
+                resultContainer.style.transform = "scale(1)";
+            }, 10)
+            document.querySelector(".table").style.pointerEvents = "none";
         }
 
-        playerTurn = !playerTurn;
+        playerTurn = !playerTurn; // To exchange turns
+    }
+
+    const startGame = () => {
+        do {
+            player1 = createPlayer("player1", "x");
+            player2 = createPlayer("player2", "o");
+        } while (player1.playerSymbol === player2.playerSymbol);
+        playerTurn = true; // Player 1 starts
+        // Animations
+        resultContainer.style.transform = "scale(0)";
+        setTimeout(() => {
+            resultContainer.style.display = "none";
+        }, 200);
+        // Set up GameBoard
+        domManipulator.emptyGameBoard();
+        gameBoardGame.cleanGameBoard();
+        document.querySelector(".table").style.pointerEvents = "";
     }
 
     return {
         newTurn,
+        startGame,
     }
 })();
 
-function createPlayer() {
-    const name = prompt("select name")
-    const playerSymbol = prompt("select one character")[0];
-
-    const playTurn = (numCell) => {
-        gameBoardGame.processNewMove(numCell, playerSymbol);
-        domManipulator.drawSymbol(numCell, playerSymbol);
-    }
-
-    return {
-        name,
-        playTurn,
-    }
-}
+// DOM
 
 const domManipulator = (function() {
+    const emptyGameBoard = () => {
+        [...document.querySelectorAll(".table > div")].forEach(cell => cell.textContent = "");
+    }
+
     const createGameBoard = () => {
         const container = document.querySelector(".container");
         const table = document.createElement("div");
@@ -95,34 +109,68 @@ const domManipulator = (function() {
                 const cell = document.createElement("div");
                 cell.id = coord;
                 cell.style.gridArea = coord;
+                cell.classList.add("cell");
                 cell.addEventListener("click", game.newTurn);
                 table.appendChild(cell);
                 index++;
             }
         }
 
+        table.style.pointerEvents = "none";
         container.appendChild(table);
     }
 
-    const drawSymbol = (cellNum, symbol) => {
+    const drawSymbol = (cellNum, symbol, color) => {
         const coord = ((cellNum < 3 ? "a" :
                       cellNum < 6 ? "b" :
                       "c")
                       + cellNum);
-        document.querySelector(`#${coord}`).textContent = symbol;
-    }
-
-    const removeGameBoard = () => {
-        document.querySelector(".table").remove();
+        const cell = document.querySelector(`#${coord}`);
+        cell.textContent = symbol;
+        cell.style.color = color;
     }
 
     return {
         createGameBoard,
         drawSymbol,
-        removeGameBoard,
+        emptyGameBoard,
     }
-})()
+})();
 
-const player1 = createPlayer();
-const player2 = createPlayer();
+// Player creator
+
+let playerChoice = false; // To style symbols
+
+function createPlayer(name, playerSymbol) {
+    let playerSymbolColor = playerChoice ? "blue" : "red"
+    playerChoice = !playerChoice;
+
+    if (!name || !playerSymbol) {
+        do {
+            name = prompt("Name:");
+            playerSymbol = prompt("Symbol (digit one digit)");
+        } while (name === "" || name === null || playerSymbol === "" || playerSymbol === null);
+    }
+
+    playerSymbol = playerSymbol[0];
+
+    const playTurn = (numCell) => {
+        gameBoardGame.processNewMove(numCell, playerSymbol);
+        domManipulator.drawSymbol(numCell, playerSymbol, playerSymbolColor);
+    }
+
+    return {
+        name,
+        playerSymbol,
+        playTurn,
+    }
+}
+
+// Start game
+
+startGameBtn.addEventListener("click", game.startGame);
+
+// Make GameBoard
+
 domManipulator.createGameBoard();
+

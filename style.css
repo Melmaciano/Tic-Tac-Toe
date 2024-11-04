@@ -1,3 +1,42 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, .result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    padding: 2em;
+}
+
+.result {
+    width: 50%;
+    transition: transform 0.2s ease-in;
+}
+
+.start-btn {
+    padding: 0.5em 1em;
+    font-size: 1.8em;
+    transition: transform 0.2s ease-in;
+    cursor: pointer;
+}
+
+.start-btn {
+    transform-origin: bottom center;
+    transition: transform 0.2s ease-in;
+
+}
+
+.start-btn:hover {
+    transform: scale(1.1);
+}
+.start-btn:active {
+    transform: translateY(5%);
+}
+
 .container {
     background-color: black;
     width: max-content;
@@ -5,7 +44,7 @@
 
 .table {
     display: grid;
-    grid-template: repeat(3, 50px) / repeat(3, 50px);
+    grid-template: repeat(3, 120px) / repeat(3, 120px);
     grid-template-areas: 
         "a0 a1 a2"
         "b3 b4 b5"
@@ -13,9 +52,42 @@
     gap: 5px;
 }
 
-.table > div {
+.cell {
     background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 3em;
+}
+
+.cell:empty:hover {
+    box-shadow: inset 0 0 4px 4px #5ada64;
+}
+
+.cell:not(:empty):hover {
+    box-shadow: inset 0 0 4px 4px #da5a5a;
+}
+
+.cell:not(:empty) {
+    animation: symbol 0.3s ease-in;
+}
+
+@keyframes symbol {
+    0% {
+        font-size: 0em;
+    }
+
+    40% {
+        font-size: 4em;
+    }
+
+    80% {
+        font-size: 2.8em;
+    } 
+
+    100% {
+        font-size: 3em;
+    }
 }
